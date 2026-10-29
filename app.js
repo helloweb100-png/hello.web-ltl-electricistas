@@ -900,6 +900,7 @@
     const cta = $('#calc-cta');
     const money = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 });
     const SAVE = .98;       /* ahorro máximo anunciado: "hasta 98%" */
+    const MAX_PAY = 200;    /* tope del cliente: con paneles, por bimestre se paga máximo esto */
     const TARIFF = 2.8;     /* MXN por kWh, promedio de referencia */
     const PANEL_KWH = 60;   /* kWh por mes que produce un panel de ~550 W en Guadalajara */
 
@@ -918,11 +919,12 @@
 
     function render() {
       const b = +range.value;
-      const year = Math.round(b * 6 * SAVE);
+      const pay = Math.min(Math.round(b * (1 - SAVE)), MAX_PAY);
+      const year = (b - pay) * 6;
       const panels = Math.max(3, Math.ceil((b / TARIFF / 2) / PANEL_KWH));
       out.textContent = money.format(b);
       range.style.setProperty('--fill-p', (((b - +range.min) / (+range.max - +range.min)) * 100).toFixed(1) + '%');
-      tween(rNew, Math.round(b * (1 - SAVE)), (v) => money.format(Math.round(v)));
+      tween(rNew, pay, (v) => money.format(Math.round(v)));
       tween(rYear, year, (v) => money.format(Math.round(v)));
       tween(rPanels, panels, (v) => String(Math.round(v)));
       tween(r25, year * 25, (v) => money.format(Math.round(v)));
